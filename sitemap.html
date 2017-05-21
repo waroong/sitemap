@@ -1,69 +1,270 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-<meta charset="utf-8"> 
-<title>Sitemap</title> 
-<meta content='width=device-width, initial-scale=1' name='viewport'> 
-<style> 
-/* Sitemaps */ #sitemap-tab{padding:7px 10px;margin:0 auto 20px} #sitemap-tab table{width:auto;margin:0 auto} #sitemap-tab form{font:inherit} #sitemap-tab label{display:block;text-align:right;margin:0 10px 0 0;padding:4px 0 0} #sitemap-tab select[disabled]{opacity:.4} #post-searcher{display:block;margin:0;padding:0} #sitemap-tab input{width:100%;border:1px solid #dedede;border-radius:5px;margin:0;padding:5px;text-transform:capitalize!important;outline:0;color:#333!important;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box} #sitemap-tab select{width:100%;border:1px solid #dedede;border-radius:5px;margin:0 0 5px;padding:5px;text-transform:capitalize!important;outline:0;color:#333!important;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box} #sitemap-tab select option{min-height:1.4em!important;} #sitemap-tab input#feed-q{padding:5px 10px!important;} #sitemap-container{background:#fff;display:block;clear:both;margin:0;padding:0;list-style:none;overflow:hidden;position:relative;border-top:none} #sitemap-container li{list-style:none;margin:0;padding:0;display:inline} #sitemap-container li a{text-decoration:none;color:#2C2C2C;font-weight:bold;font-size:16px} #sitemap-container li a:hover{text-decoration:none;color:#E94141} #sitemap-container li img{float:left;margin:0 15px 15px 0;padding:0;width:70px;height:50px;!important} #sitemap-nav{margin:10px 0 30px;text-align:center;font-weight:500;width:100%} #sitemap-nav a,#sitemap-nav span{color:#fff;text-decoration:none;display:block;opacity:.8} #sitemap-nav a:hover,#sitemap-nav span:hover{opacity:1} #sitemap-nav span{cursor:wait} @media (max-width:600px){#sitemap-tab table{margin:0 auto;width:100%} #sitemap-container,#sitemap-tab{margin:0 auto} #sitemap-container li .inner{margin:5px auto;height:auto;} #SitemaContainer li{float:none;display:block;width:auto;height:auto} #sitemap-container li .news-text, #sitemapContainer:after,#sitemap-container li img{display:none!important} 
-</style> 
-</head> 
-<body> 
+// ---------------------------------------------------
+// BLOGTOC
+// ---------------------------------------------------
+// BlogToc creates a clickable Table Of Contents for
+// Blogger Blogs.
+// It uses the JSON post feed, and create a ToC of it.
+// The ToC can be sorted by title or by date, both
+// ascending and descending, and can be filtered by
+// label.
+// ---------------------------------------------------
+// Author: Syed Faizan Ali
+// Url: http://www.mybloggerlab.com
+// Version: 2
+// Date: 2007-04-12
+// ---------------------------------------------------
+// global arrays
 
-<div id="sitemap-tab">
+   var postTitle = new Array();     // array of posttitles
+   var postUrl = new Array();       // array of posturls
+   var postDate = new Array();      // array of post publish dates
+   var postSum = new Array();       // array of post summaries
+   var postLabels = new Array();    // array of post labels
 
-  <table> 
-    <tbody> 
-      <tr> 
-        <td> 
-          <label for="feed-order">Urutkan artikel berdasarkan:</label> 
-        </td> 
-        <td> 
-          <select id="feed-order"> 
-            <option selected="" value="published">Artikel terbaru</option> 
-            <option value="updated">Artikel yang terakhir di update</option> 
-          </select> 
-        </td> 
-      </tr> 
-      <tr> 
-        <td> 
-          <label for="label-sorter">Filter artikel berdasarkan kategori:</label> 
-        </td> 
-        <td> 
-          <select disabled="" id="label-sorter"> 
-            <option selected="">Loading....</option> 
-          </select> 
-        </td> 
-      </tr> 
-      <tr> 
-        <td> 
-          <label for="feed-q">Cari artikel dengan kata kunci:</label> 
-        </td> 
-        <td> 
-          <form id="post-searcher"> 
-            <input id="feed-q" placeholder="Ketik dan tekan ENTER" type="text" /> 
-          </form> 
-        </td> 
-      </tr> 
-    </tbody> 
-  </table> 
-</div> 
-<br /> 
-<header id="result-desc"></header> 
-<br /> 
-<ul id="sitemap-container"></ul> 
-<div id="sitemap-nav"> 
-</div> 
+// global variables
+   var sortBy = "datenewest";         // default value for sorting ToC
+   var tocLoaded = false;           // true if feed is read and ToC can be displayed
+   var numChars = 250;              // number of characters in post summary
+   var postFilter = '';             // default filter value
+   var tocdiv = document.getElementById("bp_toc"); //the toc container
+   var totalEntires =0; //Entries grabbed till now
+   var totalPosts =0; //Total number of posts in the blog.
 
-<script type='text/javaScript'> 
-document.write;var loadToc,loadCategories,_toc={init:function(){var cfg={url:'https://www.waroong.net/',maxResults:10,numChars:270,thumbWidth:140,thumbHeight:95,navText:"Tampilkan artikel selanjutnya &#9660;",resetToc:"Kembali ke Awal",noImage:"//2.bp.blogspot.com/-ex3V86fj4dQ/UrCQQa4cLsI/AAAAAAAAFdA/j2FCTmGOrog/s1100/no-thumbnail.png",loading:"<span>Memuat...</span>",counting:"<div>Memuat artikel...</div>",searching:"<span>Mencari...</span>"},w=window,d=document,el=function(id){return d.getElementById(id);},o={a:el('feed-order'),b:el('label-sorter').parentNode,c:el('post-searcher'),d:el('feed-q'),e:el('result-desc'),f:el('sitemap-container'),g:el('sitemap-nav'),h:d.getElementsByTagName('head')[0],i:0,j:null,k:'published',l:0,m:""},fn={a:function(){old=el('temporer-script');old.parentNode.removeChild(old);},b:function(param){var script=d.createElement('script');script.type="text/javascript";script.id="temporer-script";script.src=param;if(el('temporer-script'))fn.a();o.h.appendChild(script);},c:function(mode,tag,order){o.i++;o.e.innerHTML=cfg.counting;o.g.innerHTML=cfg[mode==1?"searching":"loading"];if(mode===0){fn.b(tag!==null?cfg.url+'/feeds/posts/summary/-/'+ tag+'?alt=json-in-script&start-index='+((o.i*cfg.maxResults)+ 1)+'&max-results='+ cfg.maxResults+'&orderby='+ order+'&callback=loadToc':cfg.url+'/feeds/posts/summary?alt=json-in-script&start-index='+((o.i*cfg.maxResults)+ 1)+'&max-results='+ cfg.maxResults+'&orderby='+ order+'&callback=loadToc');}else if(mode==1){fn.b(cfg.url+'/feeds/posts/summary?alt=json-in-script&start-index='+((o.i*cfg.maxResults)+ 1)+'&max-results='+ cfg.maxResults+'&q='+ tag+'&orderby='+ order+'&callback=loadToc');} o.j=(tag!==null)?tag:null;o.l=mode;o.a.disabled=true;o.b.children[0].disabled=true;},d:function(json){var _h;o.g.innerHTML="";o.e.innerHTML=o.l==1?'<span>Hasil penelusuran untuk kata kunci <b>&#8220;'+ o.m+'&#8221;</b> ('+ json.feed.openSearch$totalResults.$t+' Hasil)</span>':'<div>Total: '+ json.feed.openSearch$totalResults.$t+' Artikel</div>';if("entry"in json.feed){var a=json.feed.entry,b,c,_d,e="0 Komentar",f="",g;for(var i=0;i<cfg.maxResults;i++){if(i==a.length)break;b=a[i].title.$t;_d=("summary"in a[i])?a[i].summary.$t.replace(/<br ?\/?>/ig," ").replace(/<(.*?)>/g,"").replace(/<iframe/ig,"").substring(0,cfg.numChars):"";g=("media$thumbnail"in a[i])?a[i].media$thumbnail.url.replace(/.*?:\/\//g , "//").replace(/\/s[0-9]+\-c/,"\/s"+ cfg.thumbWidth+""):cfg.noImage.replace(/\/s[0-9]+\-c/,"\/s"+ cfg.thumbWidth+"");for(var j=0,jen=a[i].link.length;j<jen;j++){c=(a[i].link[j].rel=="alternate")?a[i].link[j].href:"#";} for(var k=0,ken=a[i].link.length;k<ken;k++){if(a[i].link[k].rel=="replies"&&a[i].link[k].type=="text/html"){e=a[i].link[k].title;break;}} _h=d.createElement('li');_h.innerHTML='<div class="inner"><img style="width:'+ cfg.thumbWidth+'px;height:'+ cfg.thumbHeight+'px;" src="'+ g+'" alt="'+ b+'"><a class="toc-title" href="'+ c+'" target="_blank" title="'+ b+'">'+ b+'</a><div class="news-text">'+ _d+'&hellip;<br style="clear:both;"></div></div>';o.f.appendChild(_h);} _h=d.createElement('a');_h.href='#load-more';_h.innerHTML=cfg.navText;_h.onclick=function(){fn.c(o.l,o.j,o.k);return false;};}else{_h=d.createElement('a');_h.href='#reset-content';_h.innerHTML=cfg.resetToc;_h.onclick=function(){o.i=-1;o.e.innerHTML=cfg.counting;o.f.innerHTML="";fn.c(0,null,'published');o.a.innerHTML=o.a.innerHTML;o.b.children[0].innerHTML=o.b.children[0].innerHTML;return false;};} o.g.appendChild(_h);o.a.disabled=false;o.b.children[0].disabled=false;},e:function(json){var a=json.feed.category,b='<select id="label-sorter"><option value="" selected disabled>Pilih Kategori...</option>';for(var i=0,len=a.length;i<len;i++){b+='<option value="'+ encodeURIComponent(a[i].term).replace(/%20/g, " ")+'">'+ encodeURIComponent(a[i].term).replace(/%20/g, " ")+'</option>';} b+='</select>';o.b.innerHTML=b;o.b.children[0].onchange=function(){o.i=-1;o.f.innerHTML="";o.g.innerHTML=cfg.loading;fn.c(0,this.value,o.k);};}};loadToc=fn.d;loadCategories=fn.e;fn.b(cfg.url+'/feeds/posts/summary?alt=json-in-script&start-index='+(o.i+ 1)+'&max-results='+ cfg.maxResults+'&orderby=published&callback=loadToc');fn.b(cfg.url+'/feeds/posts/summary?alt=json-in-script&max-results=0&orderby=published&callback=loadCategories');o.a.onchange=function(){o.i=-1;o.f.innerHTML="";o.g.innerHTML=cfg.counting;o.b.children[0].innerHTML=o.b.children[0].innerHTML;fn.c(0,null,this.value);o.k=this.value;};o.c.onsubmit=function(){o.i=-1;o.f.innerHTML="";o.m=o.d.value;fn.c(1,o.d.value,o.k);return false;};}};_toc.init(); 
-</script> 
-<div class='clear'></div> 
-</div> 
-</div> 
-</div> 
-<div class='inline-ad'> 
-</div> 
-        </div></div> 
-</body> 
-</html> 
+// main callback function
+
+function loadtoc(json) {
+
+   function getPostData() {
+   // this functions reads all postdata from the json-feed and stores it in arrays
+      if ("entry" in json.feed) {
+         var numEntries = json.feed.entry.length;
+         totalEntires = totalEntires + numEntries;
+         totalPosts=json.feed.openSearch$totalResults.$t
+         if(totalPosts>totalEntires)
+         {
+         var nextjsoncall = document.createElement('script');
+         nextjsoncall.type = 'text/javascript';
+         startindex=totalEntires+1;
+         nextjsoncall.setAttribute("src", "/feeds/posts/summary?start-index=" + startindex + "&max-results=500&alt=json-in-script&callback=loadtoc");
+         tocdiv.appendChild(nextjsoncall);
+         }
+      // main loop gets all the entries from the feed
+         for (var i = 0; i < numEntries; i++) {
+         // get the entry from the feed
+            var entry = json.feed.entry[i];
+
+         // get the posttitle from the entry
+            var posttitle = entry.title.$t;
+
+         // get the post date from the entry
+            var postdate = entry.published.$t.substring(0,10);
+
+         // get the post url from the entry
+            var posturl;
+            for (var k = 0; k < entry.link.length; k++) {
+               if (entry.link[k].rel == 'alternate') {
+               posturl = entry.link[k].href;
+               break;
+               }
+            }
+
+         // get the post contents from the entry
+         // strip all html-characters, and reduce it to a summary
+            if ("content" in entry) {
+               var postcontent = entry.content.$t;}
+            else
+               if ("summary" in entry) {
+                  var postcontent = entry.summary.$t;}
+               else var postcontent = "";
+         // strip off all html-tags
+            var re = /<\S[^>]*>/g; 
+            postcontent = postcontent.replace(re, "");
+         // reduce postcontent to numchar characters, and then cut it off at the last whole word
+            if (postcontent.length > numChars) {
+               postcontent = postcontent.substring(0,numChars);
+               var quoteEnd = postcontent.lastIndexOf(" ");
+               postcontent = postcontent.substring(0,quoteEnd) + '...';
+            }
+
+         // get the post labels from the entry
+            var pll = '';
+            if ("category" in entry) {
+               for (var k = 0; k < entry.category.length; k++) {
+                  pll += '<a href="javascript:filterPosts(\'' + entry.category[k].term + '\');" title="Click here to select all posts with label \'' + entry.category[k].term + '\'">' + entry.category[k].term + '</a>,  ';
+               }
+            var l = pll.lastIndexOf(',');
+            if (l != -1) { pll = pll.substring(0,l); }
+            }
+
+         // add the post data to the arrays
+            postTitle.push(posttitle);
+            postDate.push(postdate);
+            postUrl.push(posturl);
+            postSum.push(postcontent);
+            postLabels.push(pll);
+         }
+      }
+      if(totalEntires==totalPosts) {tocLoaded=true;showToc();}
+   } // end of getPostData
+
+// start of showtoc function body
+// get the number of entries that are in the feed
+//   numEntries = json.feed.entry.length;
+
+// get the postdata from the feed
+   getPostData();
+
+// sort the arrays
+   sortPosts(sortBy);
+   tocLoaded = true;
+}
+
+
+
+// filter and sort functions
+
+
+function filterPosts(filter) {
+// This function changes the filter
+// and displays the filtered list of posts
+  // document.getElementById("bp_toc").scrollTop = document.getElementById("bp_toc").offsetTop;;
+   postFilter = filter;
+   displayToc(postFilter);
+} // end filterPosts
+
+function allPosts() {
+// This function resets the filter
+// and displays all posts
+
+   postFilter = '';
+   displayToc(postFilter);
+} // end allPosts
+
+function sortPosts(sortBy) {
+// This function is a simple bubble-sort routine
+// that sorts the posts
+
+   function swapPosts(x,y) {
+   // Swaps 2 ToC-entries by swapping all array-elements
+      var temp = postTitle[x];
+      postTitle[x] = postTitle[y];
+      postTitle[y] = temp;
+      var temp = postDate[x];
+      postDate[x] = postDate[y];
+      postDate[y] = temp;
+      var temp = postUrl[x];
+      postUrl[x] = postUrl[y];
+      postUrl[y] = temp;
+      var temp = postSum[x];
+      postSum[x] = postSum[y];
+      postSum[y] = temp;
+      var temp = postLabels[x];
+      postLabels[x] = postLabels[y];
+      postLabels[y] = temp;
+   } // end swapPosts
+
+   for (var i=0; i < postTitle.length-1; i++) {
+      for (var j=i+1; j<postTitle.length; j++) {
+         if (sortBy == "titleasc") { if (postTitle[i] > postTitle[j]) { swapPosts(i,j); } }
+         if (sortBy == "titledesc") { if (postTitle[i] < postTitle[j]) { swapPosts(i,j); } }
+         if (sortBy == "dateoldest") { if (postDate[i] > postDate[j]) { swapPosts(i,j); } }
+         if (sortBy == "datenewest") { if (postDate[i] < postDate[j]) { swapPosts(i,j); } }
+      }
+   }
+} // end sortPosts
+
+// displaying the toc
+
+function displayToc(filter) {
+// this function creates a three-column table and adds it to the screen
+   var numDisplayed = 0;
+   var tocTable = '';
+   var tocHead1 = 'POST TITLE';
+   var tocTool1 = 'Click to sort by title';
+   var tocHead2 = 'POST DATE';
+   var tocTool2 = 'Click to sort by date';
+   var tocHead3 = 'CATEGORIES';
+   var tocTool3 = '';
+   if (sortBy == "titleasc") { 
+      tocTool1 += ' (descending)';
+      tocTool2 += ' (newest first)';
+   }
+   if (sortBy == "titledesc") { 
+      tocTool1 += ' (ascending)';
+      tocTool2 += ' (newest first)';
+   }
+   if (sortBy == "dateoldest") { 
+      tocTool1 += ' (ascending)';
+      tocTool2 += ' (newest first)';
+   }
+   if (sortBy == "datenewest") { 
+      tocTool1 += ' (ascending)';
+      tocTool2 += ' (oldest first)';
+   }
+   if (postFilter != '') {
+      tocTool3 = 'Click to show all posts';
+   }
+   tocTable += '<table>';
+   tocTable += '<tr>';
+   tocTable += '<td class="toc-header-col1">';
+   tocTable += '<a href="javascript:toggleTitleSort();" title="' + tocTool1 + '">' + tocHead1 + '</a>';
+   tocTable += '</td>';
+   tocTable += '<td class="toc-header-col2">';
+   tocTable += '<a href="javascript:toggleDateSort();" title="' + tocTool2 + '">' + tocHead2 + '</a>';
+   tocTable += '</td>';
+   tocTable += '<td class="toc-header-col3">';
+   tocTable += '<a href="javascript:allPosts();" title="' + tocTool3 + '">' + tocHead3 + '</a>';
+   tocTable += '</td>';
+   tocTable += '</tr>';
+   for (var i = 0; i < postTitle.length; i++) {
+      if (filter == '') {
+         tocTable += '<tr><td class="toc-entry-col1"><a href="' + postUrl[i] + '" title="' + postSum[i] + '">' + postTitle[i] + '</a></td><td class="toc-entry-col2">' + postDate[i] + '</td><td class="toc-entry-col3">' + postLabels[i] + '</td></tr>';
+         numDisplayed++;
+      } else {
+          z = postLabels[i].lastIndexOf(filter);
+          if ( z!= -1) {
+             tocTable += '<tr><td class="toc-entry-col1"><a href="' + postUrl[i] + '" title="' + postSum[i] + '">' + postTitle[i] + '</a></td><td class="toc-entry-col2">' + postDate[i] + '</td><td class="toc-entry-col3">' + postLabels[i] + '</td></tr>';
+             numDisplayed++;
+          }
+        }
+   }
+   tocTable += '</table>';
+   if (numDisplayed == postTitle.length) {
+      var tocNote = '<span class="toc-note">Displaying all ' + postTitle.length + ' posts<br/></span>'; }
+   else {
+      var tocNote = '<span class="toc-note">Displaying ' + numDisplayed + ' posts labeled \'';
+      tocNote += postFilter + '\' of '+ postTitle.length + ' posts total<br/></span>';
+   }
+   tocdiv.innerHTML = tocNote + tocTable;
+} // end of displayToc
+
+function toggleTitleSort() {
+   if (sortBy == "titleasc") { sortBy = "titledesc"; }
+   else { sortBy = "titleasc"; }
+   sortPosts(sortBy);
+   displayToc(postFilter);
+} // end toggleTitleSort
+
+function toggleDateSort() {
+   if (sortBy == "datenewest") { sortBy = "dateoldest"; }
+   else { sortBy = "datenewest"; }
+   sortPosts(sortBy);
+   displayToc(postFilter);
+} // end toggleTitleSort
+
+
+function showToc() {
+  if (tocLoaded) { 
+     displayToc(postFilter);
+     var toclink = document.getElementById("toclink");
+   
+  }
+  else { alert("Just wait... TOC is loading"); }
+}
+
+function hideToc() {
+  var tocdiv = document.getElementById("toc");
+  tocdiv.innerHTML = '';
+  var toclink = document.getElementById("toclink");
+  toclink.innerHTML = '<a href="#" onclick="scroll(0,0); showToc(); Effect.toggle('+"'toc-result','blind');"+'">» Show Table of Contents</a> <img src="http://chenkaie.blog.googlepages.com/new_1.gif"/>';
+}
